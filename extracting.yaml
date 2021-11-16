@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: extracting
+  labels:
+    app: extracting
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      app: extracting
+  template:
+    metadata:
+      labels:
+        app: extracting
+    spec:
+      containers:
+      - name: cvltextracting
+        image: liuyt1/cvltextracting:11.25.6
+        command: [/sbin/init]
+        ports:
+        - containerPort: 22000
+        resources:
+          requests:
+            memory: 512M
+            cpu: 128m
+        securityContext:
+          privileged: true
+        env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: redis.hostname
+            value: commvault.redis.cache.windows.net
+          - name: redis.password
+            value: +0000000000000000000000000000000=
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - extracting
+            topologyKey: "kubernetes.io/hostname"            
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: extracting
+spec:
+  type: LoadBalancer
+  selector:
+    app: extracting
+  ports:
+    - port: 80 
+      targetPort: 22000
+---
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: extracting
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: extracting
+  minReplicas: 2
+  maxReplicas: 2
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+      - type: Pods
+        value: 3
+        periodSeconds: 15
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 40
