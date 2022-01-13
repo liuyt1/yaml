@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: cvltextracting
-        image: liuyt1/cvltextracting:11.25.6
+        image: extractingcontainerregistry.azurecr.io/cvltextracting:11.27.1024
         command: [/sbin/init]
         ports:
         - containerPort: 22000
@@ -37,10 +37,15 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.name
-          - name: redis.hostname
-            value: commvault.redis.cache.windows.net
-          - name: redis.password
-            value: +0000000000000000000000000000000=
+        volumeMounts:
+          - name: logfiles
+            mountPath: /var/log/commvault
+      volumes:
+      - name: logfiles
+        azureFile:
+          secretName: azure-file-secret
+          shareName: aksshare
+          readOnly: false      
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -74,7 +79,7 @@ spec:
     kind: Deployment
     name: extracting
   minReplicas: 1
-  maxReplicas: 6
+  maxReplicas: 10
   behavior:
     scaleDown:
       stabilizationWindowSeconds: 300
