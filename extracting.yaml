@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: cvltextracting
-        image: extractingcontainerregistry.azurecr.io/cvltextracting:11.27.1035
+        image: extractingcontainerregistry.azurecr.io/cvltextracting:11.sp27.10351
         command: [/sbin/init]
         ports:
         - containerPort: 22000
