@@ -57,6 +57,35 @@ spec:
                 - extracting
             topologyKey: "kubernetes.io/hostname"            
 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logmonitor
+  labels:
+    app: logmonitor
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      app: logmonitor
+  template:
+    metadata:
+      labels:
+        app: logmonitor
+    spec:
+      containers:
+      - name: cvltlogmonitor
+        image: extractingcontainerregistry.azurecr.io/logmonitor:1.1.4
+        volumeMounts:
+          - name: logfiles
+            mountPath: /var/log/commvault
+      volumes:
+      - name: logfiles
+        azureFile:
+          secretName: azure-file-secret
+          shareName: aksshare
+          readOnly: false
+---
 apiVersion: v1
 kind: Service
 metadata:
