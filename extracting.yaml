@@ -75,7 +75,7 @@ spec:
     spec:
       containers:
       - name: cvltlogmonitor
-        image: extractingcontainerregistry.azurecr.io/logmonitor:1.1.4
+        image: extractingcontainerregistry.azurecr.io/logmonitor:1.1.5
         volumeMounts:
           - name: logfiles
             mountPath: /var/log/commvault
