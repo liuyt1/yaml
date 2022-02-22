@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: cvltextracting
-        image: extractingcontainerregistry.azurecr.io/cvltextracting:11.sp27.10354
+        image: extractingcontainerregistry.azurecr.io/cvltextracting:11.sp27.103564
         command: [/sbin/init]
         ports:
         - containerPort: 22000
@@ -33,19 +33,12 @@ spec:
           initialDelaySeconds: 20
           periodSeconds: 10
         env:
+          - name: ESSERVERIP
+            value: "20.96.149.129"
           - name: POD_NAME
             valueFrom:
               fieldRef:
                 fieldPath: metadata.name
-        volumeMounts:
-          - name: logfiles
-            mountPath: /var/log/commvault
-      volumes:
-      - name: logfiles
-        azureFile:
-          secretName: azure-file-secret
-          shareName: aksshare
-          readOnly: false      
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -56,35 +49,6 @@ spec:
                 values:
                 - extracting
             topologyKey: "kubernetes.io/hostname"            
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: logmonitor
-  labels:
-    app: logmonitor
-spec:
-  replicas: 1 
-  selector:
-    matchLabels:
-      app: logmonitor
-  template:
-    metadata:
-      labels:
-        app: logmonitor
-    spec:
-      containers:
-      - name: cvltlogmonitor
-        image: extractingcontainerregistry.azurecr.io/logmonitor:1.1.5
-        volumeMounts:
-          - name: logfiles
-            mountPath: /var/log/commvault
-      volumes:
-      - name: logfiles
-        azureFile:
-          secretName: azure-file-secret
-          shareName: aksshare
-          readOnly: false
 ---
 apiVersion: v1
 kind: Service
